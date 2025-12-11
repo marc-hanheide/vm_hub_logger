@@ -19,7 +19,7 @@ class VMHubLogAnalyzer:
     # Error patterns for categorization
     T3_TIMEOUT_PATTERNS = [
         "T3 time-out",
-        "16 consecutive T3 timeouts",
+        "consecutive T3 timeouts",
         "Unicast Maintenance Ranging",
         "No Ranging Response received"
     ]
@@ -66,6 +66,7 @@ class VMHubLogAnalyzer:
             'total_events': len(self.events),
             'priority_counts': self._count_by_priority(),
             'date_range': self._get_date_range(),
+            'device_info': self._extract_device_info(),
             'critical_issues': self._analyze_critical_issues(),
             'error_issues': self._analyze_error_issues(),
             'warning_issues': self._analyze_warning_issues(),
@@ -88,6 +89,35 @@ class VMHubLogAnalyzer:
             min(dates).strftime("%Y-%m-%d %H:%M:%S"),
             max(dates).strftime("%Y-%m-%d %H:%M:%S")
         )
+    
+    def _extract_device_info(self) -> Dict:
+        """Extract CM-MAC and CMTS-MAC addresses from log messages."""
+        cm_macs = set()
+        cmts_macs = set()
+        
+        for event in self.events:
+            msg = event.get('message', '')
+            
+            # Extract CM-MAC
+            if 'CM-MAC=' in msg:
+                try:
+                    cm_mac = msg.split('CM-MAC=')[1].split(';')[0].strip()
+                    cm_macs.add(cm_mac)
+                except:
+                    pass
+            
+            # Extract CMTS-MAC
+            if 'CMTS-MAC=' in msg:
+                try:
+                    cmts_mac = msg.split('CMTS-MAC=')[1].split(';')[0].strip()
+                    cmts_macs.add(cmts_mac)
+                except:
+                    pass
+        
+        return {
+            'cm_mac_addresses': sorted(list(cm_macs)),
+            'cmts_mac_addresses': sorted(list(cmts_macs))
+        }
         
     def _analyze_critical_issues(self) -> Dict:
         """Analyze critical priority events."""
@@ -101,14 +131,14 @@ class VMHubLogAnalyzer:
         
         for event in critical_events:
             msg = event.get('message', '')
-            if '16 consecutive T3 timeouts' in msg:
+            if 'consecutive T3 timeouts' in msg:
                 consecutive_timeouts.append(event)
             elif 'Retries exhausted' in msg:
                 retries_exhausted.append(event)
+            elif 'Started Unicast Maintenance Ranging' in msg and 'T3 time-out' in msg:
+                t3_timeouts.append(event)
             elif 'No Response received - T3 time-out' in msg or 'No Ranging Response received' in msg:
                 no_response.append(event)
-            elif 'T3 time-out' in msg:
-                t3_timeouts.append(event)
                 
         # Extract affected channels from consecutive timeout messages
         affected_channels = []
@@ -245,6 +275,18 @@ class VMHubLogAnalyzer:
         print(f"\n📊 OVERVIEW")
         print(f"  Total Events: {self.stats['total_events']:,}")
         print(f"  Date Range: {self.stats['date_range'][0]} to {self.stats['date_range'][1]}")
+        
+        # Device Info
+        device_info = self.stats.get('device_info', {})
+        if device_info:
+            print(f"\n🔧 DEVICE INFORMATION")
+            cm_macs = device_info.get('cm_mac_addresses', [])
+            cmts_macs = device_info.get('cmts_mac_addresses', [])
+            
+            if cm_macs:
+                print(f"  CM-MAC Address(es): {', '.join(cm_macs)}")
+            if cmts_macs:
+                print(f"  CMTS-MAC Address(es): {', '.join(cmts_macs)}")
         
         # Priority breakdown
         print(f"\n📈 EVENT PRIORITY BREAKDOWN")

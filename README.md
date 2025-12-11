@@ -116,6 +116,61 @@ Press `Ctrl+C` to gracefully stop the logger. It will display a summary before e
 - **Permission errors**: Ensure you have write permission for the log file location
 - **Import errors**: Make sure you've installed dependencies with `pip install -r requirements.txt`
 
+## Log Analysis
+
+The `analyze_logs.py` script provides comprehensive analysis of logged events with statistics and summaries.
+
+### Usage
+
+```bash
+# Basic analysis with console output
+python analyze_logs.py vm_hub_events.log
+
+# Generate JSON report file
+python analyze_logs.py vm_hub_events.log --json
+```
+
+### Features
+
+- **Priority Breakdown**: Count and percentage of events by severity (critical, error, warning, notice)
+- **Critical Issue Analysis**: Detailed breakdown of T3 timeouts, retries exhausted, and affected channels
+- **Channel Failure Tracking**: Per-channel failure statistics
+- **Outage Detection**: Automatically identifies potential outage periods (clusters of critical events)
+- **Warning Analysis**: MDD timeout counts, DBC mismatch counts
+- **Status Message Counts**: CM-STATUS messages, profile changes, login events
+- **Smart Recommendations**: Context-aware recommendations based on issue severity
+
+### Sample Output
+
+```
+======================================================================
+VIRGIN MEDIA HUB LOG ANALYSIS SUMMARY
+======================================================================
+
+📊 OVERVIEW
+  Total Events: 301
+  Date Range: 2025-12-01 20:22:29 to 2025-12-11 07:56:30
+
+📈 EVENT PRIORITY BREAKDOWN
+  🔴 Critical       95 ( 31.6%)
+  🟠 Error           4 (  1.3%)
+  🟡 Warning        62 ( 20.6%)
+  🔵 Notice        140 ( 46.5%)
+
+🚨 CRITICAL ISSUES (T3 TIMEOUTS)
+  Total Critical Events: 95
+  Affected Upstream Channels: 0, 1, 2, 3, 4, 8
+
+⏱️  IDENTIFIED OUTAGE PERIODS (5 total)
+  1. 2025-12-10 20:21:55 to 2025-12-10 20:23:47
+     Duration: 1.9 min | Events: 21
+```
+
+### JSON Export
+
+The `--json` flag exports detailed statistics to a JSON file (`<logfile>_analysis.json`) for further processing or integration with other tools.
+
 ## License
 
 MIT License
+
