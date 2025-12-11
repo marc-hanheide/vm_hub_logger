@@ -2,3 +2,4 @@
 vm_hub_events.log
 *.docx
 *.json
+logs/

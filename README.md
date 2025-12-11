@@ -18,6 +18,23 @@ A Python script to automatically retrieve and log event data from Virgin Media H
 
 ## Installation
 
+### Option 1: Docker (Recommended)
+
+The easiest way to run the logger is using Docker:
+
+```bash
+# Build and run with docker compose
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop the logger
+docker compose down
+```
+
+### Option 2: Python Virtual Environment
+
 1. Navigate to the project directory:
 ```bash
 cd /Users/mhanheide/workspace/vm_hub_logger
@@ -33,9 +50,62 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Option 3: Convenience Script
+
+Use the provided shell script:
+
+```bash
+./run_logger.sh
+```
+
 ## Usage
 
-### Basic Usage
+### Docker Usage
+
+The Docker container is configured via environment variables in `compose.yaml`:
+
+```yaml
+environment:
+  - HUB_IP=192.168.0.1           # Your hub's IP address
+  - LOG_FILE=/app/logs/vm_hub_events.log
+  - INTERVAL=10                   # Polling interval in seconds
+```
+
+To override settings:
+
+```bash
+# Edit compose.yaml, then restart
+docker compose up -d
+
+# Or use environment variables
+HUB_IP=192.168.1.1 INTERVAL=30 docker compose up -d
+```
+
+Logs are persisted in the `./logs` directory on your host machine.
+
+**Docker Commands:**
+
+```bash
+# Build the image
+docker compose build
+
+# Run in foreground (see output)
+docker compose up
+
+# Run in background
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop container
+docker compose down
+
+# Rebuild and restart
+docker compose up -d --build
+```
+
+### Python Direct Usage
 
 ```bash
 python vm_hub_logger.py
@@ -46,7 +116,7 @@ This will:
 - Poll every 10 seconds (default)
 - Save logs to `vm_hub_events.log` (default)
 
-### Command-Line Options
+### Command-Line Options (Python Direct Usage)
 
 ```bash
 python vm_hub_logger.py --help
@@ -59,7 +129,7 @@ Available options:
 - `--interval SECONDS`: Polling interval in seconds (default: 10)
 - `--version`: Show version information
 
-### Examples
+### Examples (Python Direct Usage)
 
 ```bash
 # Poll every 30 seconds
@@ -73,6 +143,9 @@ python vm_hub_logger.py --log-file /var/log/vm_hub.log
 
 # Combine multiple options
 python vm_hub_logger.py --hub-ip 192.168.0.1 --interval 5 --log-file logs/hub_events.log
+
+# Use the convenience script
+./run_logger.sh
 ```
 
 ## Output
@@ -99,7 +172,16 @@ Message: 16 consecutive T3 timeouts while trying to range on upstream channel 2
 
 ## Stopping the Logger
 
+**Docker:**
+```bash
+docker compose down
+```
+
+**Python Direct:**
 Press `Ctrl+C` to gracefully stop the logger. It will display a summary before exiting.
+
+**Convenience Script:**
+Press `Ctrl+C` to stop the logger running via `run_logger.sh`.
 
 ## How It Works
 
@@ -115,6 +197,31 @@ Press `Ctrl+C` to gracefully stop the logger. It will display a summary before e
 - **SSL warnings**: The script automatically suppresses SSL warnings for local router connections
 - **Permission errors**: Ensure you have write permission for the log file location
 - **Import errors**: Make sure you've installed dependencies with `pip install -r requirements.txt`
+- **Docker issues**: 
+  - Ensure Docker and Docker Compose are installed
+  - Check container logs: `docker compose logs`
+  - Verify network connectivity from container to hub
+  - For custom networks, adjust `network_mode` in `compose.yaml`
+
+## Tools and Scripts
+
+### Main Logger: `vm_hub_logger.py`
+The primary logging application that polls the Virgin Media Hub 5 for events.
+
+### Log Analysis: `analyze_logs.py`
+Comprehensive analysis tool for logged events with statistics and summaries.
+
+### Convenience Script: `run_logger.sh`
+Shell script to quickly start the logger with default settings using Python.
+
+### Docker Files
+- **`Dockerfile`**: Container image definition for the logger application
+- **`compose.yaml`**: Docker Compose configuration for easy deployment
+
+### Container Image
+- **Image**: `lcas.lincoln.ac.uk/marc-hanheide/vm_hub_logger:latest`
+- **Base**: Python 3.11 slim
+- **Configuration**: Via environment variables (HUB_IP, LOG_FILE, INTERVAL)
 
 ## Log Analysis
 
