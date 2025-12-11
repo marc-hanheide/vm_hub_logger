@@ -1,0 +1,20 @@
+services:
+  vm-hub-logger:
+    image: lcas.lincoln.ac.uk/marc-hanheide/vm_hub_logger:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vm-hub-logger
+    tty: true
+    environment:
+      # Virgin Media Hub IP address
+      - HUB_IP=192.168.0.1
+      # Log file location inside container
+      - LOG_FILE=/app/logs/vm_hub_events.log
+      # Polling interval in seconds
+      - INTERVAL=10
+    volumes:
+      # Mount logs directory to persist logs on host
+      - ./logs:/app/logs
+    restart: unless-stopped
+    network_mode: bridge
