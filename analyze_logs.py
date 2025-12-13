@@ -340,7 +340,7 @@ class VMHubLogAnalyzer:
         outages = self.stats['outage_periods']
         if outages:
             print(f"\n⏱️  IDENTIFIED OUTAGE PERIODS ({len(outages)} total)")
-            for i, outage in enumerate(outages[:10], 1):  # Show top 10
+            for i, outage in enumerate(outages, 1): 
                 duration_min = outage['duration_seconds'] / 60
                 print(f"  {i}. {outage['start']} to {outage['end']}")
                 print(f"     Duration: {duration_min:.1f} min | Events: {outage['event_count']}")
