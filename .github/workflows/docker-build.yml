@@ -44,6 +44,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ github.event.repository.created_at }}
+            org.opencontainers.image.maintainer=${{ github.event.repository.owner.login }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -57,6 +61,6 @@ jobs:
         with:
           files: |
             ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+            cwd://${{ steps.meta.outputs.bake-file }}
           targets: vm-hub-logger
           push: ${{ github.event_name != 'pull_request' }}
