@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+
     container_name: vm-hub-logger
     tty: true
     environment:
@@ -12,7 +13,7 @@ services:
       # Log file location inside container
       - LOG_FILE=/app/logs/vm_hub_events.log
       # Polling interval in seconds
-      - INTERVAL=10
+      - INTERVAL=600
     volumes:
       # Mount logs directory to persist logs on host
       - ./logs:/app/logs
