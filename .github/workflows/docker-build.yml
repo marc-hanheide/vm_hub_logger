@@ -46,7 +46,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
-            org.opencontainers.image.authors=${{ github.event.repository.owner.url }}
+            org.opencontainers.image.authors=${{ github.event.repository.owner.html_url }}
             org.opencontainers.image.description=${{ github.event.repository.description }}
             org.opencontainers.image.documentation=${{ github.event.repository.html_url }}/blob/main/README.md
             org.opencontainers.image.revision_date=${{ github.event.ref.head_commit.timestamp }}
